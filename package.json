@@ -1,0 +1,16 @@
+{
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.19.2"
+  },
+  "name": "corner_cut",
+  "version": "1.0.0",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "docker build -t corner_cut . && docker run -p 3000:3000 --init corner_cut"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": ""
+}

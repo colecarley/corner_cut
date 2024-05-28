@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="./app.js"></script>
+    <title>Document</title>
+    <style>
+        body {
+            font-family: Helvetica, Arial, sans-serif;            
+        }
+    </style>
+</head>
+<body onload="addScramble()" onkeyup="toggleTime()">
+    <p>hello foobar</p>
+    <button onclick="generateScramble()">scramble</button>
+    <button id="foobar" onclick="foobar()">click me</button>
+    <div id="container"></div>
+    <p id="scramble"></p>
+    <button id="timer-button" onclick="toggleTime()">start</button>
+    <p>currentTime: <span id="currentTime">0</span></p>
+    <p>ao3: <span id="ao3"></span></p>
+    <p>ao5: <span id="ao5"></span></p>
+    <p>ao12: <span id="ao12"></span></p>
+    <p>best: <span id="best"></span></p>
+    <div id="all"></div>
+</body>
+</html>
