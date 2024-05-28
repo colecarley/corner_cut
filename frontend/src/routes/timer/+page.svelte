@@ -1,14 +1,17 @@
 <script lang="ts">
-    import Squeeze from "$lib/components/squeeze.svelte";
     import Center from "$lib/components/center.svelte";
-    import { onDestroy, onMount } from "svelte";
-    import { saveTime } from "$lib/utils/saveTime";
+    import { cubeTypes, type cubeTypeId } from "$lib/lookups/cubeTypes";
     import { times } from "$lib/store/times";
+    import { getScramble } from "$lib/utils/getScramble";
     import { getTimes } from "$lib/utils/getTimes";
+    import { saveTime } from "$lib/utils/saveTime";
+    import { Label, Select } from "flowbite-svelte";
+    import { onDestroy, onMount } from "svelte";
 
     let scramble: string;
+    let scrambleType: cubeTypeId = "333";
     onMount(() => {
-        scramble = generateScramble();
+        scramble = getScramble(scrambleType);
         getTimes();
     });
 
@@ -18,6 +21,10 @@
     });
 
     onDestroy(unsubscribe);
+
+    function updateScramble() {
+        scramble = getScramble(scrambleType);
+    }
 
     let time = 0;
     let interval: number;
@@ -38,58 +45,7 @@
             `${datetime.getSeconds()}.${datetime.getMilliseconds()}`,
         );
         saveTime(time);
-        scramble = generateScramble();
-    }
-
-    function generateScramble() {
-        const scramble = [];
-        while (scramble.length < 20) {
-            const move = getRandomMove();
-            if (canAddMove(scramble, move)) {
-                scramble.push(move);
-                continue;
-            }
-        }
-        return scramble
-            .map((move) => `${move}${getRandomVariation()}`)
-            .join(" ");
-    }
-    const badLastForRepeatingPenultimate: Record<string, string> = {
-        L: "R",
-        R: "L",
-        U: "D",
-        D: "U",
-        F: "B",
-        B: "F",
-    };
-    function canAddMove(scramble: string[], move: string) {
-        if (scramble.length == 0) {
-            return true;
-        }
-        const lastMove = scramble[scramble.length - 1];
-        if (lastMove == move) {
-            return false;
-        }
-        if (scramble.length == 1) {
-            return true;
-        }
-        if (lastMove == badLastForRepeatingPenultimate[move]) {
-            const penultimateMove = scramble[scramble.length - 2];
-            if (penultimateMove == move) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    const moveTypes = ["L", "R", "U", "D", "B", "F"];
-    function getRandomMove() {
-        return moveTypes[Math.floor(Math.random() * moveTypes.length)];
-    }
-
-    const variations = ["", "'", "2"];
-    function getRandomVariation() {
-        return variations[Math.floor(Math.random() * variations.length)];
+        scramble = getScramble(scrambleType);
     }
 
     let isRunning = false;
@@ -122,6 +78,16 @@
 />
 
 {#if !isRunning}
+    <div class="p-8">
+        <Label>
+            <p class="text-[color:var(--cc-green)]">Scramble Type</p>
+            <Select
+                bind:value={scrambleType}
+                items={cubeTypes.map((c) => ({ ...c, value: c.id }))}
+                on:change={() => updateScramble()}
+            />
+        </Label>
+    </div>
     <div
         class="flex flex-col items-center bg-[color:var(--cc-black)] text-[color:var(--cc-green)]"
     >
