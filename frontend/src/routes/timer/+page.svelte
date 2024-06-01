@@ -5,8 +5,29 @@
     import { getScramble } from "$lib/utils/getScramble";
     import { getTimes } from "$lib/utils/getTimes";
     import { saveTime } from "$lib/utils/saveTime";
-    import { Label, Select } from "flowbite-svelte";
+    import { Button, Label, Select } from "flowbite-svelte";
     import { onDestroy, onMount } from "svelte";
+    import themeList from "../../themes/_list";
+
+    const DEFAULT_COLOR_INDEX = 116;
+
+    let selectedColor = themeList[DEFAULT_COLOR_INDEX];
+    function updateColors() {
+        const stylesheets = document.querySelectorAll("link[rel=stylesheet]");
+
+        for (const sheet of stylesheets) {
+            sheet.parentElement?.removeChild(sheet);
+        }
+
+        const link = document.createElement("link");
+        link.setAttribute("rel", "stylesheet");
+        link.setAttribute(
+            "href",
+            `/Users/colecarley/src/corner_cut/frontend/src/themes/${selectedColor.name}.css`,
+        );
+
+        document.head.appendChild(link);
+    }
 
     let scramble: string;
     let scrambleType: cubeTypeId = "333";
@@ -79,19 +100,47 @@
 
 {#if !isRunning}
     <div class="p-8">
-        <Label>
-            <p class="text-[color:var(--cc-green)]">Scramble Type</p>
-            <Select
-                bind:value={scrambleType}
-                items={cubeTypes.map((c) => ({ ...c, value: c.id }))}
-                on:change={() => updateScramble()}
-            />
-        </Label>
+        <p class="bg-bg">bg</p>
+        <p class="bg-main">main</p>
+        <p class="bg-caret">caret</p>
+        <p class="bg-sub">sub</p>
+        <p class="bg-sub-alt">sub alt</p>
+        <p class="bg-text">text</p>
+        <p class="bg-error">error</p>
+        <p class="bg-error-extra">error extra</p>
+        <p class="bg-colorful-error-extra">colorful error extra</p>
+        <p class="bg-color-error-extra-color">color error extra color</p>
+
+        <div class="flex gap-6">
+            <Label>
+                <p class="text-text">Scramble Type</p>
+                <Select
+                    bind:value={scrambleType}
+                    items={cubeTypes.map((c) => ({ ...c, value: c.id }))}
+                    on:change={() => updateScramble()}
+                />
+            </Label>
+            <Label>
+                <p class="text-text">Theme</p>
+
+                <Select
+                    bind:value={selectedColor}
+                    items={themeList.map((color) => ({
+                        name: color.name,
+                        value: color,
+                    }))}
+                    on:change={() => updateColors()}
+                ></Select>
+            </Label>
+        </div>
     </div>
-    <div
-        class="flex flex-col items-center bg-[color:var(--cc-black)] text-[color:var(--cc-green)]"
-    >
-        <h1 class="text-[50px]">{scramble}</h1>
+    <div class="flex flex-col items-center bg-bg text-text">
+        <h1 class="text-[50px] p-4 rounded-2xl outline outline-4 outline-main">
+            {scramble}
+        </h1>
+        <Button class="text-sub" on:click={() => updateScramble()}
+            >New Scramble</Button
+        >
         {#if time}
             <p>{time}</p>
         {/if}
@@ -106,7 +155,7 @@
 {:else}
     <div class="flex h-full justify-center items-center">
         <Center>
-            <h1 class="text-[color:var(--cc-green)] text-[288px]">{time}</h1>
+            <h1 class="text-text text-[288px]">{time}</h1>
         </Center>
     </div>
 {/if}

@@ -2,18 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-    --cc-green: #c4d6b0;
-    --cc-blue: #477998;
-    --cc-black: #291f1e;
-    --cc-red: #f64740;
-    --cc-dark-red: #a3333d;
-}
-
 body {
-    margin: 3rem;
     font-family: Helvetica, Arial, sans-serif;
-    background-color: var(--cc-black);
-    color: var(--cc-green);
+    background-color: var(--bg-color);
+    color: var(--text-color);
 }
-
