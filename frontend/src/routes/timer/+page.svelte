@@ -99,40 +99,27 @@
 />
 
 {#if !isRunning}
-    <div class="p-8">
-        <p class="bg-bg">bg</p>
-        <p class="bg-main">main</p>
-        <p class="bg-caret">caret</p>
-        <p class="bg-sub">sub</p>
-        <p class="bg-sub-alt">sub alt</p>
-        <p class="bg-text">text</p>
-        <p class="bg-error">error</p>
-        <p class="bg-error-extra">error extra</p>
-        <p class="bg-colorful-error-extra">colorful error extra</p>
-        <p class="bg-color-error-extra-color">color error extra color</p>
+    <div class="p-8 flex gap-6">
+        <Label>
+            <p class="text-text">Scramble Type</p>
+            <Select
+                bind:value={scrambleType}
+                items={cubeTypes.map((c) => ({ ...c, value: c.id }))}
+                on:change={() => updateScramble()}
+            />
+        </Label>
+        <Label>
+            <p class="text-text">Theme</p>
 
-        <div class="flex gap-6">
-            <Label>
-                <p class="text-text">Scramble Type</p>
-                <Select
-                    bind:value={scrambleType}
-                    items={cubeTypes.map((c) => ({ ...c, value: c.id }))}
-                    on:change={() => updateScramble()}
-                />
-            </Label>
-            <Label>
-                <p class="text-text">Theme</p>
-
-                <Select
-                    bind:value={selectedColor}
-                    items={themeList.map((color) => ({
-                        name: color.name,
-                        value: color,
-                    }))}
-                    on:change={() => updateColors()}
-                ></Select>
-            </Label>
-        </div>
+            <Select
+                bind:value={selectedColor}
+                items={themeList.map((color) => ({
+                    name: color.name,
+                    value: color,
+                }))}
+                on:change={() => updateColors()}
+            ></Select>
+        </Label>
     </div>
     <div class="flex flex-col items-center bg-bg text-text">
         <h1 class="text-[50px] p-4 rounded-2xl outline outline-4 outline-main">
