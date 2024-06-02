@@ -1,12 +1,17 @@
 <script lang="ts">
     import Center from "$lib/components/center.svelte";
     import { cubeTypes, type cubeTypeId } from "$lib/lookups/cubeTypes";
-    import { times } from "$lib/store/times";
     import { getScramble } from "$lib/utils/getScramble";
-    import { getTimes } from "$lib/utils/getTimes";
-    import { saveTime } from "$lib/utils/saveTime";
+    import {
+        createTime,
+        getSessions,
+        getTimes,
+        saveTime,
+        type Session,
+        type Time,
+    } from "$lib/utils/getTimes";
     import { Button, Label, Select } from "flowbite-svelte";
-    import { onDestroy, onMount } from "svelte";
+    import { onMount } from "svelte";
     import themeList from "../../themes/_list";
 
     const DEFAULT_COLOR_INDEX = 116;
@@ -29,19 +34,21 @@
         document.head.appendChild(link);
     }
 
-    let scramble: string;
+    let scramble: string = "";
     let scrambleType: cubeTypeId = "333";
+    let sessions: Session[] = [];
+    let currentSession: string;
+    let times: Time[] = [];
     onMount(() => {
         scramble = getScramble(scrambleType);
-        getTimes();
+        sessions = getSessions();
+        currentSession = sessions[0]?.id;
+        times = getTimes(currentSession);
     });
 
-    let pastTimes: number[];
-    let unsubscribe = times.subscribe((t) => {
-        pastTimes = t;
-    });
-
-    onDestroy(unsubscribe);
+    function changeSession() {
+        times = getTimes(currentSession);
+    }
 
     function updateScramble() {
         scramble = getScramble(scrambleType);
@@ -65,7 +72,9 @@
         time = parseFloat(
             `${datetime.getSeconds()}.${datetime.getMilliseconds()}`,
         );
-        saveTime(time);
+
+        saveTime(currentSession, createTime(time, scramble, false));
+        times = getTimes(currentSession);
         scramble = getScramble(scrambleType);
     }
 
@@ -120,6 +129,18 @@
                 on:change={() => updateColors()}
             ></Select>
         </Label>
+        <Label>
+            <p class="text-text">Session</p>
+
+            <Select
+                bind:value={currentSession}
+                items={sessions.map((session) => ({
+                    value: session.id,
+                    name: session.name,
+                }))}
+                on:change={() => changeSession()}
+            ></Select>
+        </Label>
     </div>
     <div class="flex flex-col items-center bg-bg text-text">
         <h1 class="text-[50px] p-4 rounded-2xl outline outline-4 outline-main">
@@ -132,10 +153,12 @@
             <p>{time}</p>
         {/if}
     </div>
-    {#each pastTimes.reverse() as time}
+    {#each times.reverse() as time}
         <div>
             <p>
-                {time}
+                {time.time}
+                {time.scramble}
+                {time.createdAt}
             </p>
         </div>
     {/each}

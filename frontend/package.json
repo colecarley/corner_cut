@@ -28,6 +28,8 @@
     },
     "type": "module",
     "dependencies": {
-        "scrambow": "^1.8.1"
+        "@types/uuid": "^9.0.8",
+        "scrambow": "^1.8.1",
+        "uuid": "^9.0.1"
     }
 }
