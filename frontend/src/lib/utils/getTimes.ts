@@ -107,4 +107,7 @@ export function updateSession(sessionId: string, changes: Partial<Session>) {
 
 export function removeSession(sessionId: string) {
     localStorage.removeItem(sessionId);
+    const sessionIds = getSessionIds();
+    const newSessionIds = sessionIds.filter((id) => id !== sessionId);
+    localStorage.setItem("cornercut_sessionIds", JSON.stringify(newSessionIds));
 }

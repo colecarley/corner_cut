@@ -3,9 +3,11 @@
     import { cubeTypes, type cubeTypeId } from "$lib/lookups/cubeTypes";
     import { getScramble } from "$lib/utils/getScramble";
     import {
+        createSession,
         createTime,
         getSessions,
         getTimes,
+        saveSession,
         saveTime,
         type Session,
         type Time,
@@ -42,7 +44,12 @@
     onMount(() => {
         scramble = getScramble(scrambleType);
         sessions = getSessions();
+        if (!sessions.length) {
+            saveSession(createSession("Playground", "333"));
+            sessions = getSessions();
+        }
         currentSession = sessions[0]?.id;
+
         times = getTimes(currentSession);
     });
 
@@ -153,13 +160,16 @@
             <p>{time}</p>
         {/if}
     </div>
+    <div class="grid grid-cols-12 font-bold">
+        <p>Time</p>
+        <p class="col-span-8">Scramble</p>
+        <p class="col-span-3">Created At</p>
+    </div>
     {#each times.reverse() as time}
-        <div>
-            <p>
-                {time.time}
-                {time.scramble}
-                {time.createdAt}
-            </p>
+        <div class="grid grid-cols-12">
+            <p>{time.time}</p>
+            <p class="col-span-8">{time.scramble}</p>
+            <p class="col-span-3">{new Date(time.createdAt).toDateString()}</p>
         </div>
     {/each}
 {:else}

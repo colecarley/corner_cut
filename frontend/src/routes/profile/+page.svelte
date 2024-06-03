@@ -3,6 +3,7 @@
     import {
         createSession,
         getSessions,
+        removeSession,
         saveSession,
         type Session,
     } from "$lib/utils/getTimes";
@@ -26,6 +27,11 @@
         sessions = getSessions();
     }
 
+    function deleteSession(sessionId: string) {
+        removeSession(sessionId);
+        sessions = getSessions();
+    }
+
     let form = { sessionName: "Playground", scrambleType: "333" };
 </script>
 
@@ -38,6 +44,12 @@
                 showModal = true;
             }}
         >
+            <Button
+                on:click={(event) => {
+                    event.stopPropagation();
+                    deleteSession(session.id);
+                }}><p class="bg-main">delete</p></Button
+            >
             <h5>{session.name}</h5>
             <p>{session.scrambleType}</p>
         </Card>
