@@ -57,7 +57,7 @@
 </div>
 
 <Button on:click={() => (showModal = true)}>New Session</Button>
-<Modal title="Terms of Service" bind:open={showModal} autoclose>
+<Modal title="Create Session" bind:open={showModal} autoclose>
     <Label for="session_name" class="mb-2">Session Name</Label>
     <Input
         type="text"

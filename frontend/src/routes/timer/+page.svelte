@@ -7,12 +7,14 @@
         createTime,
         getSessions,
         getTimes,
+        removeTime,
         saveSession,
         saveTime,
+        updateTime,
         type Session,
         type Time,
     } from "$lib/utils/getTimes";
-    import { Button, Label, Select } from "flowbite-svelte";
+    import { Button, Label, Select, Modal } from "flowbite-svelte";
     import { onMount } from "svelte";
     import themeList from "../../themes/_list";
 
@@ -35,6 +37,9 @@
 
         document.head.appendChild(link);
     }
+
+    let showTimeModal = false;
+    let selectedTime: Time;
 
     let scramble: string = "";
     let scrambleType: cubeTypeId = "333";
@@ -59,6 +64,17 @@
 
     function updateScramble() {
         scramble = getScramble(scrambleType);
+    }
+
+    function handleDeleteTime() {
+        removeTime(currentSession, selectedTime.id);
+        times = getTimes(currentSession);
+    }
+
+    function handleDNF() {
+        updateTime(currentSession, selectedTime.id, { isDNF: true });
+        times = getTimes(currentSession);
+        console.log(times);
     }
 
     let time = 0;
@@ -167,9 +183,25 @@
     </div>
     {#each times.reverse() as time}
         <div class="grid grid-cols-12">
-            <p>{time.time}</p>
-            <p class="col-span-8">{time.scramble}</p>
-            <p class="col-span-3">{new Date(time.createdAt).toDateString()}</p>
+            <Button
+                on:click={() => {
+                    console.log(time.time);
+                    selectedTime = time;
+                    showTimeModal = true;
+                }}
+            >
+                {#if time.isDNF}
+                    <p class="text-text">DNF</p>
+                {:else}
+                    <p class="text-text">
+                        {time.time}
+                    </p>
+                {/if}
+            </Button>
+            <p class="col-span-8 text-text">{time.scramble}</p>
+            <p class="col-span-3 text-text">
+                {new Date(time.createdAt).toDateString()}
+            </p>
         </div>
     {/each}
 {:else}
@@ -179,3 +211,12 @@
         </Center>
     </div>
 {/if}
+
+<Modal title="Create Session" bind:open={showTimeModal} autoclose>
+    <svelte:fragment slot="footer">
+        <Button color="alternative" on:click={() => handleDeleteTime()}
+            >Delete Time</Button
+        >
+        <Button color="alternative" on:click={() => handleDNF()}>DNF</Button>
+    </svelte:fragment>
+</Modal>
