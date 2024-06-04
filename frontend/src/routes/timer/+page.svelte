@@ -80,6 +80,7 @@
     let time = 0;
     let interval: number;
     let start = 0;
+    let state: "idle" | "not ready" | "ready" | "running" = "idle";
     function startTimer() {
         start = Date.now();
         time = 0;
@@ -103,24 +104,32 @@
 
     let isRunning = false;
     let lastKeyTime: number;
+    let timeStamp = 0;
     function handleKeydown(key: KeyboardEvent) {
-        if (isRunning) {
+        if (state === "idle") {
+            state = "not ready";
+            timeStamp = key.timeStamp;
+        }
+        if (state == "not ready" && key.timeStamp - timeStamp >= 1000) {
+            state = "ready";
+        }
+        if (state === "running") {
             endTimer();
             lastKeyTime = key.timeStamp;
             isRunning = false;
+            state = "idle";
         }
     }
 
     function handleKeyup(key: KeyboardEvent) {
-        if (!isRunning) {
-            // TODO implement this as a stack instead
-            if (key.timeStamp - 100 < lastKeyTime) {
-                return;
-            }
+        if (state === "ready" && key.timeStamp - timeStamp >= 1000) {
             if (key.code == "Space") {
+                state = "running";
                 startTimer();
                 isRunning = true;
             }
+        } else {
+            state = "idle";
         }
     }
 </script>
@@ -165,7 +174,12 @@
             ></Select>
         </Label>
     </div>
-    <div class="flex flex-col items-center bg-bg text-text">
+    <div
+        class="flex flex-col items-center text-text"
+        class:bg-caret={state === "running"}
+        class:bg-error={state === "ready"}
+        class:bg-bg={state === "idle"}
+    >
         <h1 class="text-[50px] p-4 rounded-2xl outline outline-4 outline-main">
             {scramble}
         </h1>
