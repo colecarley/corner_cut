@@ -29,6 +29,7 @@
     "type": "module",
     "dependencies": {
         "@types/uuid": "^9.0.8",
+        "cubing": "^0.49.0",
         "scrambow": "^1.8.1",
         "uuid": "^9.0.1"
     }

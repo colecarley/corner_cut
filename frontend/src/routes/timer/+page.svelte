@@ -1,6 +1,7 @@
 <script lang="ts">
     import Center from "$lib/components/center.svelte";
     import { cubeTypes, type cubeTypeId } from "$lib/lookups/cubeTypes";
+    import { twistyPlayerCubeTypesById } from "$lib/lookups/twistyPlayerCubeTypes";
     import { getScramble } from "$lib/utils/getScramble";
     import {
         createSession,
@@ -14,7 +15,8 @@
         type Session,
         type Time,
     } from "$lib/utils/getTimes";
-    import { Button, Label, Select, Modal } from "flowbite-svelte";
+    import { TwistyPlayer, type PuzzleID } from "cubing/twisty";
+    import { Button, Label, Modal, Select } from "flowbite-svelte";
     import { onMount } from "svelte";
     import themeList from "../../themes/_list";
 
@@ -56,14 +58,34 @@
         currentSession = sessions[0]?.id;
 
         times = getTimes(currentSession);
+        updateTwistyPlayer();
     });
+
+    function updateTwistyPlayer() {
+        const player = new TwistyPlayer({
+            alg: scramble,
+            visualization: "2D",
+            controlPanel: "none",
+            background: "none",
+            colorScheme: "light",
+            puzzle: twistyPlayerCubeTypesById[scrambleType]
+                .playerId as PuzzleID,
+        });
+        const container = document.getElementById("twisty-player");
+        if (container) {
+            container.innerHTML = "";
+            container.appendChild(player);
+        }
+    }
 
     function changeSession() {
         times = getTimes(currentSession);
+        updateTwistyPlayer();
     }
 
     function updateScramble() {
         scramble = getScramble(scrambleType);
+        updateTwistyPlayer();
     }
 
     function handleDeleteTime() {
@@ -203,11 +225,15 @@
             <p>{time}</p>
         {/if}
     </div>
+
+    <div id="twisty-player"></div>
+
     <div class="grid grid-cols-12 font-bold">
         <p>Time</p>
         <p class="col-span-8">Scramble</p>
         <p class="col-span-3">Created At</p>
     </div>
+
     {#each times.reverse() as time}
         <div class="grid grid-cols-12">
             <Button
