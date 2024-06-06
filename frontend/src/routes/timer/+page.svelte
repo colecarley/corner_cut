@@ -154,10 +154,23 @@
 
             <Select
                 bind:value={selectedColor}
-                items={themeList.map((color) => ({
-                    name: color.name,
-                    value: color,
-                }))}
+                items={themeList
+                    .sort((a, b) =>
+                        a.name > b.name ? 1 : a.name < b.name ? -1 : 0,
+                    )
+                    .map((color) => ({
+                        name:
+                            color.displayName ??
+                            color.name
+                                .split("_")
+                                .map(
+                                    (word) =>
+                                        word[0].toUpperCase() +
+                                        word.substring(1),
+                                )
+                                .join(" "),
+                        value: color,
+                    }))}
                 on:change={() => updateColors()}
             ></Select>
         </Label>
