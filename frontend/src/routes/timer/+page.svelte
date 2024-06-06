@@ -19,6 +19,7 @@
     import { Button, Label, Modal, Select } from "flowbite-svelte";
     import { onMount } from "svelte";
     import themeList from "../../themes/_list";
+    import Summary from "$lib/components/summary.svelte";
 
     const DEFAULT_COLOR_INDEX = 116;
 
@@ -128,29 +129,36 @@
     let lastKeyTime: number;
     let timeStamp = 0;
     function handleKeydown(key: KeyboardEvent) {
-        if (state === "idle") {
-            state = "not ready";
-            timeStamp = key.timeStamp;
-        }
-        if (state == "not ready" && key.timeStamp - timeStamp >= 1000) {
-            state = "ready";
-        }
-        if (state === "running") {
-            endTimer();
-            lastKeyTime = key.timeStamp;
-            isRunning = false;
-            state = "idle";
+        if (key.code == "Space") {
+            if (state === "idle") {
+                state = "not ready";
+                document.body.style.backgroundColor = "var(--error-color)";
+                timeStamp = key.timeStamp;
+            }
+            if (state == "not ready" && key.timeStamp - timeStamp >= 550) {
+                state = "ready";
+                document.body.style.backgroundColor = "var(--caret-color)";
+            }
+            if (state === "running") {
+                document.body.style.backgroundColor = "var(--bg-color)";
+                endTimer();
+                lastKeyTime = key.timeStamp;
+                isRunning = false;
+                state = "idle";
+            }
         }
     }
 
     function handleKeyup(key: KeyboardEvent) {
-        if (state === "ready" && key.timeStamp - timeStamp >= 1000) {
+        if (state === "ready" && key.timeStamp - timeStamp >= 550) {
             if (key.code == "Space") {
                 state = "running";
+                document.body.style.backgroundColor = "var(--bg-color)";
                 startTimer();
                 isRunning = true;
             }
         } else {
+            document.body.style.backgroundColor = "var(--bg-color)";
             state = "idle";
         }
     }
@@ -209,12 +217,7 @@
             ></Select>
         </Label>
     </div>
-    <div
-        class="flex flex-col items-center text-text"
-        class:bg-caret={state === "running"}
-        class:bg-error={state === "ready"}
-        class:bg-bg={state === "idle"}
-    >
+    <div class="flex flex-col items-center text-text">
         <h1 class="text-[50px] p-4 rounded-2xl outline outline-4 outline-main">
             {scramble}
         </h1>
@@ -226,37 +229,42 @@
         {/if}
     </div>
 
-    <div id="twisty-player"></div>
-
-    <div class="grid grid-cols-12 font-bold">
-        <p>Time</p>
-        <p class="col-span-8">Scramble</p>
-        <p class="col-span-3">Created At</p>
+    <div class="grid grid-cols-2 gap-6">
+        {#if times.length}
+            <Summary bind:times></Summary>
+        {/if}
+        <div id="twisty-player"></div>
     </div>
-
-    {#each times.reverse() as time}
-        <div class="grid grid-cols-12">
-            <Button
-                on:click={() => {
-                    console.log(time.time);
-                    selectedTime = time;
-                    showTimeModal = true;
-                }}
-            >
-                {#if time.isDNF}
-                    <p class="text-text">DNF</p>
-                {:else}
-                    <p class="text-text">
-                        {time.time}
-                    </p>
-                {/if}
-            </Button>
-            <p class="col-span-8 text-text">{time.scramble}</p>
-            <p class="col-span-3 text-text">
-                {new Date(time.createdAt).toDateString()}
-            </p>
+    <div>
+        <div class="grid grid-cols-12 font-bold">
+            <p>Time</p>
+            <p class="col-span-8">Scramble</p>
+            <p class="col-span-3">Created At</p>
         </div>
-    {/each}
+        {#each times.reverse() as time}
+            <div class="grid grid-cols-12">
+                <Button
+                    on:click={() => {
+                        console.log(time.time);
+                        selectedTime = time;
+                        showTimeModal = true;
+                    }}
+                >
+                    {#if time.isDNF}
+                        <p class="text-text">DNF</p>
+                    {:else}
+                        <p class="text-text">
+                            {time.time}
+                        </p>
+                    {/if}
+                </Button>
+                <p class="col-span-8 text-text">{time.scramble}</p>
+                <p class="col-span-3 text-text">
+                    {new Date(time.createdAt).toDateString()}
+                </p>
+            </div>
+        {/each}
+    </div>
 {:else}
     <div class="flex h-full justify-center items-center">
         <Center>
