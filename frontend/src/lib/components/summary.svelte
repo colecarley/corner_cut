@@ -1,5 +1,6 @@
 <script lang="ts">
     import { type Time } from "$lib/utils/getTimes";
+    import { round } from "$lib/utils/round";
 
     export let times: Time[];
 
@@ -31,9 +32,10 @@
             }
         }
 
-        return (
+        return round(
             sortedTimes.reduce((acc, time) => acc + time.time!, 0) /
-            (10 - dnfCount)
+                (10 - dnfCount),
+            2,
         );
     }
 
@@ -51,18 +53,22 @@
         sortedTimes.pop();
         sortedTimes.shift();
 
-        return sortedTimes.reduce((acc, time) => acc + time.time!, 0) / 3;
+        return round(
+            sortedTimes.reduce((acc, time) => acc + time.time!, 0) / 3,
+            2,
+        );
     }
 
     function getAo3() {
         // No DNFs
         if (times.length < 3) return "N/A";
 
-        return (
+        return round(
             times
                 .reverse()
                 .slice(0, 3)
-                .reduce((acc, time) => acc + time.time!, 0) / 3
+                .reduce((acc, time) => acc + time.time!, 0) / 3,
+            2,
         );
     }
 
@@ -71,10 +77,11 @@
     }
 
     function getAverage() {
-        return (
+        return round(
             times
                 .filter((time) => time.isDNF)
-                .reduce((acc, time) => acc + time.time!, 0) / times.length
+                .reduce((acc, time) => acc + time.time!, 0) / times.length,
+            2,
         );
     }
 </script>

@@ -123,6 +123,7 @@
         saveTime(currentSession, createTime(time, scramble, false));
         times = getTimes(currentSession);
         scramble = getScramble(scrambleType);
+        updateTwistyPlayer();
     }
 
     let isRunning = false;

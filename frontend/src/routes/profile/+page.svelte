@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { goto } from "$app/navigation";
     import { cubeTypes, type cubeTypeId } from "$lib/lookups/cubeTypes";
     import {
         createSession,
@@ -7,6 +8,7 @@
         saveSession,
         type Session,
     } from "$lib/utils/getTimes";
+    import { redirect } from "@sveltejs/kit";
     import { Button, Modal, Card, Label, Input, Select } from "flowbite-svelte";
     import { onMount } from "svelte";
 
@@ -39,9 +41,10 @@
     {#each sessions as session}
         <Card
             on:click={() => {
-                form.sessionName = session.name;
-                form.scrambleType = session.scrambleType ?? "none";
-                showModal = true;
+                // form.sessionName = session.name;
+                // form.scrambleType = session.scrambleType ?? "none";
+                // showModal = true;
+                goto(`/session/${session.id}`);
             }}
         >
             <Button
