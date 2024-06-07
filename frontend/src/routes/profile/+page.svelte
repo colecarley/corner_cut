@@ -1,6 +1,10 @@
 <script lang="ts">
     import { goto } from "$app/navigation";
-    import { cubeTypes, type cubeTypeId } from "$lib/lookups/cubeTypes";
+    import {
+        cubeTypeById,
+        cubeTypes,
+        type cubeTypeId,
+    } from "$lib/lookups/cubeTypes";
     import {
         type Session,
         createSession,
@@ -11,6 +15,7 @@
     import { sessions$ } from "$lib/store/sessions";
     import { Button, Card, Input, Label, Modal, Select } from "flowbite-svelte";
     import { onMount } from "svelte";
+    import { CloseOutline } from "flowbite-svelte-icons";
 
     let sessions: Session[] = [];
     sessions$.subscribe((value) => {
@@ -42,21 +47,31 @@
 <div class="grid grid-cols-2 gap-4">
     {#each sessions as session}
         <Card
+            class="bg-sub-alt border-sub-alt"
             on:click={() => {
-                // form.sessionName = session.name;
-                // form.scrambleType = session.scrambleType ?? "none";
-                // showModal = true;
                 goto(`/session/${session.id}`);
             }}
         >
-            <Button
-                on:click={(event) => {
-                    event.stopPropagation();
-                    deleteSession(session.id);
-                }}><p class="bg-main">delete</p></Button
-            >
-            <h5>{session.name}</h5>
-            <p>{session.scrambleType}</p>
+            <div class="flex justify-between items-start">
+                <div>
+                    <h5 class="text-lg font-bold text-main">{session.name}</h5>
+                    <p class="text-text">
+                        {session.scrambleType
+                            ? session.scrambleType === "none"
+                                ? "none"
+                                : cubeTypeById[session.scrambleType].name
+                            : ""}
+                    </p>
+                </div>
+                <Button
+                    on:click={(event) => {
+                        event.stopPropagation();
+                        deleteSession(session.id);
+                    }}
+                >
+                    <CloseOutline color="var(--sub-color)" />
+                </Button>
+            </div>
         </Card>
     {/each}
 </div>

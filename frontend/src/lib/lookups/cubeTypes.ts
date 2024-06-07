@@ -1,3 +1,4 @@
+import { keyBy } from "$lib/utils/keyBy";
 
 export const cubeTypes = [
     {
@@ -52,3 +53,4 @@ export const cubeTypes = [
 
 export const cubeTypeIds = cubeTypes.map((c) => c.id);
 export type cubeTypeId = (typeof cubeTypeIds)[number];
+export const cubeTypeById = keyBy(cubeTypes.slice(), 'id'); 

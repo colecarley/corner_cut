@@ -99,7 +99,6 @@ export const themes = [
   },
   {
     "name": "rgb",
-    "displayName": "RGB",
     "bgColor": "#111",
     "mainColor": "#eee",
     "subColor": "#444",
@@ -1101,7 +1100,6 @@ export const themes = [
   },
   {
     "name": "iv_spade",
-    "displayName": 'IV Spade',
     "bgColor": "#0c0c0c",
     "mainColor": "#b7976a",
     "subColor": "#404040",
@@ -1109,7 +1107,6 @@ export const themes = [
   },
   {
     "name": "iv_clover",
-    "displayName": 'IV Clover',
     "bgColor": "#a0a0a0",
     "mainColor": "#573e40",
     "subColor": "#353535",
@@ -1239,7 +1236,6 @@ export const themes = [
 export type ThemeId = ((typeof themes)[number])["name"];
 export type Theme = {
   name: string;
-  displayName?: string;
   bgColor: string;
   mainColor: string;
   subColor: string;

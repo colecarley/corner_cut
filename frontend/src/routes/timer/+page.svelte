@@ -26,6 +26,7 @@
     import { sessions$ } from "$lib/store/sessions";
     import { getConfig, updateConfig } from "$lib/services/configService";
     import { config$ } from "$lib/store/config";
+    import { RefreshOutline } from "flowbite-svelte-icons";
 
     let selectedColor: ThemeId = "material";
     function updateColors() {
@@ -184,7 +185,7 @@
     on:keyup={(key) => handleKeyup(key)}
 />
 
-{#if state !== "running"}
+{#if state === "idle"}
     <div class="p-8 flex gap-6">
         <Label>
             <p class="text-text">Scramble Type</p>
@@ -205,16 +206,7 @@
                         a.name > b.name ? 1 : a.name < b.name ? -1 : 0,
                     )
                     .map((color) => ({
-                        name:
-                            color.displayName ??
-                            color.name
-                                .split("_")
-                                .map(
-                                    (word) =>
-                                        word[0].toUpperCase() +
-                                        word.substring(1),
-                                )
-                                .join(" "),
+                        name: color.name.split("_").join(" "),
                         value: color.name,
                     }))}
                 on:change={() => updateColors()}
@@ -234,12 +226,14 @@
         </Label>
     </div>
     <div class="flex flex-col items-center text-text">
-        <h1 class="text-[50px] p-4 rounded-2xl outline outline-4 outline-main">
-            {scramble}
+        <h1 class="text-[50px] p-4 rounded-2xl bg-sub-alt text-main">
+            <span class="hover:text-text">
+                {scramble}
+            </span>
         </h1>
-        <Button class="text-sub" on:click={() => updateScramble()}
-            >New Scramble</Button
-        >
+        <Button class="text-sub focus:ring-0" on:click={() => updateScramble()}>
+            <RefreshOutline></RefreshOutline>
+        </Button>
     </div>
     {#if times.length}
         <Summary bind:times></Summary>
@@ -277,7 +271,22 @@
         </div>
         <div id="twisty-player" class="flex justify-center items-center"></div>
     </div>
-{:else}
+{/if}
+{#if state === "not ready"}
+    <div class="flex h-full justify-center items-center">
+        <Center>
+            <h1 class="text-text text-[288px]">-</h1>
+        </Center>
+    </div>
+{/if}
+{#if state === "ready"}
+    <div class="flex h-full justify-center items-center">
+        <Center>
+            <h1 class="text-text text-[288px]">+</h1>
+        </Center>
+    </div>
+{/if}
+{#if state === "running"}
     <div class="flex h-full justify-center items-center">
         <Center>
             <h1 class="text-text text-[288px]">{time}</h1>

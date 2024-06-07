@@ -50,8 +50,8 @@ export const twistyPlayerCubeTypes = [
         id: 'square1',
         playerId: 'square1'
     }
-];
+] as const;
 
 export const twistyPlayerCubeTypeIds = twistyPlayerCubeTypes.map((c) => c.id);
 export type twistyPlayerCubeTypeId = (typeof twistyPlayerCubeTypeIds)[number];
-export const twistyPlayerCubeTypesById = keyBy(twistyPlayerCubeTypes, 'id'); 
+export const twistyPlayerCubeTypesById = keyBy(twistyPlayerCubeTypes.slice(), 'id'); 
