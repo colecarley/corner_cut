@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { type Time } from "$lib/utils/getTimes";
+    import { type Time } from "$lib/services/timeService";
     import { round } from "$lib/utils/round";
 
     export let times: Time[];

@@ -1,4 +1,4 @@
-export default [
+export const themes = [
   {
     "name": "dark_note",
     "bgColor": "#1f1f1f",
@@ -1234,4 +1234,14 @@ export default [
     "subColor": "#779097",
     "textColor": "#E5E5E5"
   }
-] 
+] as const;
+
+export type ThemeId = ((typeof themes)[number])["name"];
+export type Theme = {
+  name: string;
+  displayName?: string;
+  bgColor: string;
+  mainColor: string;
+  subColor: string;
+  textColor: string;
+};

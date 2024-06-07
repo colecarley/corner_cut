@@ -1,11 +1,7 @@
 <script lang="ts">
     import { page } from "$app/stores";
-    import {
-        getSession,
-        getTimes,
-        type Session,
-        type Time,
-    } from "$lib/utils/getTimes";
+    import { type Session, getSession } from "$lib/services/sessionService";
+    import { getTimes, type Time } from "$lib/services/timeService";
     import {
         VisArea,
         VisAxis,

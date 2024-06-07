@@ -2,19 +2,23 @@
     import { goto } from "$app/navigation";
     import { cubeTypes, type cubeTypeId } from "$lib/lookups/cubeTypes";
     import {
+        type Session,
         createSession,
         getSessions,
         removeSession,
         saveSession,
-        type Session,
-    } from "$lib/utils/getTimes";
-    import { redirect } from "@sveltejs/kit";
-    import { Button, Modal, Card, Label, Input, Select } from "flowbite-svelte";
+    } from "$lib/services/sessionService";
+    import { sessions$ } from "$lib/store/sessions";
+    import { Button, Card, Input, Label, Modal, Select } from "flowbite-svelte";
     import { onMount } from "svelte";
 
     let sessions: Session[] = [];
+    sessions$.subscribe((value) => {
+        sessions = value;
+    });
+
     onMount(() => {
-        sessions = getSessions();
+        getSessions();
     });
 
     let showModal = false;
@@ -26,12 +30,10 @@
             form.scrambleType as cubeTypeId,
         );
         saveSession(session);
-        sessions = getSessions();
     }
 
     function deleteSession(sessionId: string) {
         removeSession(sessionId);
-        sessions = getSessions();
     }
 
     let form = { sessionName: "Playground", scrambleType: "333" };

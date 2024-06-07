@@ -2,43 +2,34 @@
     import Center from "$lib/components/center.svelte";
     import { cubeTypes, type cubeTypeId } from "$lib/lookups/cubeTypes";
     import { twistyPlayerCubeTypesById } from "$lib/lookups/twistyPlayerCubeTypes";
-    import { getScramble } from "$lib/utils/getScramble";
+    import { getScramble } from "$lib/services/scrambleService";
     import {
-        createSession,
         createTime,
-        getSessions,
         getTimes,
         removeTime,
-        saveSession,
         saveTime,
         updateTime,
-        type Session,
         type Time,
-    } from "$lib/utils/getTimes";
+    } from "$lib/services/timeService";
     import { TwistyPlayer, type PuzzleID } from "cubing/twisty";
     import { Button, Label, Modal, Select } from "flowbite-svelte";
     import { onMount } from "svelte";
-    import themeList from "../../themes/_list";
+    import { themes, type Theme, type ThemeId } from "../../themes/_list";
     import Summary from "$lib/components/summary.svelte";
+    import {
+        createSession,
+        getSessions,
+        saveSession,
+        type Session,
+    } from "$lib/services/sessionService";
+    import { times$ } from "$lib/store/times";
+    import { sessions$ } from "$lib/store/sessions";
+    import { getConfig, updateConfig } from "$lib/services/configService";
+    import { config$ } from "$lib/store/config";
 
-    const DEFAULT_COLOR_INDEX = 116;
-
-    let selectedColor = themeList[DEFAULT_COLOR_INDEX];
+    let selectedColor: ThemeId = "material";
     function updateColors() {
-        const stylesheets = document.querySelectorAll("link[rel=stylesheet]");
-
-        for (const sheet of stylesheets) {
-            sheet.parentElement?.removeChild(sheet);
-        }
-
-        const link = document.createElement("link");
-        link.setAttribute("rel", "stylesheet");
-        link.setAttribute(
-            "href",
-            `/Users/colecarley/src/corner_cut/frontend/src/themes/${selectedColor.name}.css`,
-        );
-
-        document.head.appendChild(link);
+        updateConfig({ color: selectedColor });
     }
 
     let showTimeModal = false;
@@ -47,18 +38,48 @@
     let scramble: string = "";
     let scrambleType: cubeTypeId = "333";
     let sessions: Session[] = [];
+    sessions$.subscribe((value) => {
+        sessions = value;
+    });
     let currentSession: string;
     let times: Time[] = [];
+    times$.subscribe((value) => {
+        times = value;
+    });
+
     onMount(() => {
+        config$.subscribe((value) => {
+            if (!value.color) return;
+
+            const stylesheets = document.querySelectorAll(
+                "link[rel=stylesheet]",
+            );
+
+            for (const sheet of stylesheets) {
+                sheet.parentElement?.removeChild(sheet);
+            }
+
+            const link = document.createElement("link");
+            link.setAttribute("rel", "stylesheet");
+            link.setAttribute(
+                "href",
+                `/Users/colecarley/src/corner_cut/frontend/src/themes/${value.color}.css`,
+            );
+
+            document.head.appendChild(link);
+        });
+
         scramble = getScramble(scrambleType);
-        sessions = getSessions();
+        getSessions();
         if (!sessions.length) {
             saveSession(createSession("Playground", "333"));
-            sessions = getSessions();
         }
         currentSession = sessions[0]?.id;
-
-        times = getTimes(currentSession);
+        getConfig();
+        // selectedColor =
+        //     themes.find((theme) => theme.name === selectedColor)?.name ??
+        //     "material";
+        getTimes(currentSession);
         updateTwistyPlayer();
     });
 
@@ -91,13 +112,10 @@
 
     function handleDeleteTime() {
         removeTime(currentSession, selectedTime.id);
-        times = getTimes(currentSession);
     }
 
     function handleDNF() {
         updateTime(currentSession, selectedTime.id, { isDNF: true });
-        times = getTimes(currentSession);
-        console.log(times);
     }
 
     let time = 0;
@@ -121,12 +139,10 @@
         );
 
         saveTime(currentSession, createTime(time, scramble, false));
-        times = getTimes(currentSession);
         scramble = getScramble(scrambleType);
         updateTwistyPlayer();
     }
 
-    let isRunning = false;
     let lastKeyTime: number;
     let timeStamp = 0;
     function handleKeydown(key: KeyboardEvent) {
@@ -144,7 +160,6 @@
                 document.body.style.backgroundColor = "var(--bg-color)";
                 endTimer();
                 lastKeyTime = key.timeStamp;
-                isRunning = false;
                 state = "idle";
             }
         }
@@ -156,7 +171,6 @@
                 state = "running";
                 document.body.style.backgroundColor = "var(--bg-color)";
                 startTimer();
-                isRunning = true;
             }
         } else {
             document.body.style.backgroundColor = "var(--bg-color)";
@@ -170,7 +184,7 @@
     on:keyup={(key) => handleKeyup(key)}
 />
 
-{#if !isRunning}
+{#if state !== "running"}
     <div class="p-8 flex gap-6">
         <Label>
             <p class="text-text">Scramble Type</p>
@@ -185,7 +199,8 @@
 
             <Select
                 bind:value={selectedColor}
-                items={themeList
+                items={themes
+                    .slice()
                     .sort((a, b) =>
                         a.name > b.name ? 1 : a.name < b.name ? -1 : 0,
                     )
@@ -200,7 +215,7 @@
                                         word.substring(1),
                                 )
                                 .join(" "),
-                        value: color,
+                        value: color.name,
                     }))}
                 on:change={() => updateColors()}
             ></Select>
@@ -225,46 +240,42 @@
         <Button class="text-sub" on:click={() => updateScramble()}
             >New Scramble</Button
         >
-        {#if time}
-            <p>{time}</p>
-        {/if}
     </div>
-
+    {#if times.length}
+        <Summary bind:times></Summary>
+    {/if}
     <div class="grid grid-cols-2 gap-6">
-        {#if times.length}
-            <Summary bind:times></Summary>
-        {/if}
-        <div id="twisty-player"></div>
-    </div>
-    <div>
-        <div class="grid grid-cols-12 font-bold">
-            <p>Time</p>
-            <p class="col-span-8">Scramble</p>
-            <p class="col-span-3">Created At</p>
-        </div>
-        {#each times.reverse() as time}
-            <div class="grid grid-cols-12">
-                <Button
-                    on:click={() => {
-                        console.log(time.time);
-                        selectedTime = time;
-                        showTimeModal = true;
-                    }}
-                >
-                    {#if time.isDNF}
-                        <p class="text-text">DNF</p>
-                    {:else}
-                        <p class="text-text">
-                            {time.time}
-                        </p>
-                    {/if}
-                </Button>
-                <p class="col-span-8 text-text">{time.scramble}</p>
-                <p class="col-span-3 text-text">
-                    {new Date(time.createdAt).toDateString()}
-                </p>
+        <div>
+            <div class="grid grid-cols-12 font-bold">
+                <p class="text-main">Time</p>
+                <p class="col-span-8 text-main">Scramble</p>
+                <p class="col-span-3 text-main">Created At</p>
             </div>
-        {/each}
+            {#each times.reverse() as time}
+                <div class="grid grid-cols-12">
+                    <Button
+                        on:click={() => {
+                            console.log(time.time);
+                            selectedTime = time;
+                            showTimeModal = true;
+                        }}
+                    >
+                        {#if time.isDNF}
+                            <p class="text-error">DNF</p>
+                        {:else}
+                            <p class="text-main text-start">
+                                {time.time}
+                            </p>
+                        {/if}
+                    </Button>
+                    <p class="col-span-8 text-sub">{time.scramble}</p>
+                    <p class="col-span-3 text-sub">
+                        {new Date(time.createdAt).toDateString()}
+                    </p>
+                </div>
+            {/each}
+        </div>
+        <div id="twisty-player" class="flex justify-center items-center"></div>
     </div>
 {:else}
     <div class="flex h-full justify-center items-center">
