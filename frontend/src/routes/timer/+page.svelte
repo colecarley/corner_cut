@@ -85,6 +85,7 @@
     });
 
     function updateTwistyPlayer() {
+        console.log("updating twisty player");
         const player = new TwistyPlayer({
             alg: scramble,
             visualization: "2D",
@@ -235,40 +236,11 @@
             <RefreshOutline></RefreshOutline>
         </Button>
     </div>
-    {#if times.length}
-        <Summary bind:times></Summary>
-    {/if}
+
     <div class="grid grid-cols-2 gap-6">
-        <div>
-            <div class="grid grid-cols-12 font-bold">
-                <p class="text-main">Time</p>
-                <p class="col-span-8 text-main">Scramble</p>
-                <p class="col-span-3 text-main">Created At</p>
-            </div>
-            {#each times.reverse() as time}
-                <div class="grid grid-cols-12">
-                    <Button
-                        on:click={() => {
-                            console.log(time.time);
-                            selectedTime = time;
-                            showTimeModal = true;
-                        }}
-                    >
-                        {#if time.isDNF}
-                            <p class="text-error">DNF</p>
-                        {:else}
-                            <p class="text-main text-start">
-                                {time.time}
-                            </p>
-                        {/if}
-                    </Button>
-                    <p class="col-span-8 text-sub">{time.scramble}</p>
-                    <p class="col-span-3 text-sub">
-                        {new Date(time.createdAt).toDateString()}
-                    </p>
-                </div>
-            {/each}
-        </div>
+        {#if times.length}
+            <Summary bind:times></Summary>
+        {/if}
         <div id="twisty-player" class="flex justify-center items-center"></div>
     </div>
 {/if}

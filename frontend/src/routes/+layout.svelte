@@ -10,13 +10,13 @@
         <h1 class="text-[36px] font-bold font-sans">corner cut</h1>
         <nav class="flex gap-4 items-center">
             <a href="/timer">
-                <ClockSolid class="text-sub hover:text-text" />
+                <ClockSolid size="lg" class="text-sub hover:text-text" />
             </a>
             <a href="/profile">
-                <UserSolid class="text-sub hover:text-text" />
+                <UserSolid size="lg" class="text-sub hover:text-text" />
             </a>
             <a href="/">
-                <HomeSolid class="text-sub hover:text-text  " />
+                <HomeSolid size="lg" class="text-sub hover:text-text  " />
             </a>
         </nav>
     </div>

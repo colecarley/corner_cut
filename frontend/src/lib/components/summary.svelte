@@ -87,22 +87,38 @@
 </script>
 
 <div>
-    <h2>Summary</h2>
-
     <div>
-        <h3>Best Time</h3>
-        <p>{best}</p>
+        <p class="font-bold text-sub">last</p>
+        <h3 class="font-bold text-main text-[96px]">{times[0].time}</h3>
+    </div>
+    <div class="grid grid-cols-2 gap-6">
+        <div>
+            <p class="font-bold text-sub">total</p>
+            <h3 class="font-bold text-main text-3xl">{times.length}</h3>
+        </div>
+        <div>
+            <p class="font-bold text-sub">best</p>
+            <h3 class="font-bold text-main text-3xl">{best}</h3>
+        </div>
 
-        <h3>Average Time</h3>
-        <p>{average}</p>
+        <div>
+            <p class="font-bold text-sub">average</p>
+            <h3 class="font-bold text-main text-3xl">{average}</h3>
+        </div>
 
-        <h3>Average of 3</h3>
-        <p>{ao3}</p>
+        <div>
+            <p class="font-bold text-sub">ao3</p>
+            <h3 class="font-bold text-main text-3xl">{ao3}</h3>
+        </div>
 
-        <h3>Average of 5</h3>
-        <p>{ao5}</p>
+        <div>
+            <p class="font-bold text-sub">ao5</p>
+            <h3 class="font-bold text-main text-3xl">{ao5}</h3>
+        </div>
 
-        <h3>Average of 12</h3>
-        <p>{ao12}</p>
+        <div>
+            <p class="font-bold text-sub">ao12</p>
+            <h3 class="font-bold text-main text-3xl">{ao12}</h3>
+        </div>
     </div>
 </div>

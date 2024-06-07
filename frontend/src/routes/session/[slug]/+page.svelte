@@ -13,7 +13,7 @@
         VisXYContainer,
     } from "@unovis/svelte";
     import { Scatter, StackedBar } from "@unovis/ts";
-    import { Label, Select } from "flowbite-svelte";
+    import { Button, Label, Select } from "flowbite-svelte";
     import { onMount } from "svelte";
 
     const sessionId = $page.params.slug;
@@ -112,6 +112,30 @@
     {/if}
     <VisTooltip {triggers} />
 </VisXYContainer>
+<div>
+    <div class="grid grid-cols-12 font-bold">
+        <p class="text-main">Time</p>
+        <p class="col-span-8 text-main">Scramble</p>
+        <p class="col-span-3 text-main">Created At</p>
+    </div>
+    {#each times.reverse() as time}
+        <div class="grid grid-cols-12">
+            <Button>
+                {#if time.isDNF}
+                    <p class="text-error">DNF</p>
+                {:else}
+                    <p class="text-main text-start">
+                        {time.time}
+                    </p>
+                {/if}
+            </Button>
+            <p class="col-span-8 text-sub">{time.scramble}</p>
+            <p class="col-span-3 text-sub">
+                {new Date(time.createdAt).toDateString()}
+            </p>
+        </div>
+    {/each}
+</div>
 
 <style>
     :root {
