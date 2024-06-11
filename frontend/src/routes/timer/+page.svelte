@@ -45,7 +45,11 @@
     let currentSession: string;
     let times: Time[] = [];
     times$.subscribe((value) => {
-        times = value;
+        times = value.sort(
+            (a, b) =>
+                new Date(a.createdAt).getTime() -
+                new Date(b.createdAt).getTime(),
+        );
     });
 
     onMount(() => {
@@ -68,6 +72,7 @@
             );
 
             document.head.appendChild(link);
+            updateTwistyPlayer();
         });
 
         scramble = getScramble(scrambleType);
@@ -77,15 +82,10 @@
         }
         currentSession = sessions[0]?.id;
         getConfig();
-        // selectedColor =
-        //     themes.find((theme) => theme.name === selectedColor)?.name ??
-        //     "material";
         getTimes(currentSession);
-        updateTwistyPlayer();
     });
 
     function updateTwistyPlayer() {
-        console.log("updating twisty player");
         const player = new TwistyPlayer({
             alg: scramble,
             visualization: "2D",
@@ -95,6 +95,7 @@
             puzzle: twistyPlayerCubeTypesById[scrambleType]
                 .playerId as PuzzleID,
         });
+
         const container = document.getElementById("twisty-player");
         if (container) {
             container.innerHTML = "";
@@ -142,10 +143,8 @@
 
         saveTime(currentSession, createTime(time, scramble, false));
         scramble = getScramble(scrambleType);
-        updateTwistyPlayer();
     }
 
-    let lastKeyTime: number;
     let timeStamp = 0;
     function handleKeydown(key: KeyboardEvent) {
         if (key.code == "Space") {
@@ -159,10 +158,9 @@
                 document.body.style.backgroundColor = "var(--caret-color)";
             }
             if (state === "running") {
+                state = "idle";
                 document.body.style.backgroundColor = "var(--bg-color)";
                 endTimer();
-                lastKeyTime = key.timeStamp;
-                state = "idle";
             }
         }
     }
@@ -178,6 +176,10 @@
             document.body.style.backgroundColor = "var(--bg-color)";
             state = "idle";
         }
+    }
+
+    function foo(_: any) {
+        updateTwistyPlayer();
     }
 </script>
 
@@ -226,22 +228,32 @@
             ></Select>
         </Label>
     </div>
-    <div class="flex flex-col items-center text-text">
-        <h1 class="text-[50px] p-4 rounded-2xl bg-sub-alt text-main">
-            <span class="hover:text-text">
-                {scramble}
-            </span>
-        </h1>
-        <Button class="text-sub focus:ring-0" on:click={() => updateScramble()}>
-            <RefreshOutline></RefreshOutline>
-        </Button>
-    </div>
-
-    <div class="grid grid-cols-2 gap-6">
-        {#if times.length}
-            <Summary bind:times></Summary>
-        {/if}
-        <div id="twisty-player" class="flex justify-center items-center"></div>
+    <div class="grid grid-cols-3">
+        <div class="grid grid-cols-2 gap-6 p-6">
+            {#if times.length}
+                <Summary bind:times></Summary>
+            {/if}
+        </div>
+        <div class="col-span-2">
+            <div class="flex flex-col items-center text-text">
+                <h1 class="text-[50px] p-4 rounded-2xl bg-sub-alt text-main">
+                    <span class="hover:text-text">
+                        {scramble}
+                    </span>
+                </h1>
+                <Button
+                    class="text-sub focus:ring-0"
+                    on:click={() => updateScramble()}
+                >
+                    <RefreshOutline></RefreshOutline>
+                </Button>
+            </div>
+            <div
+                use:foo
+                id="twisty-player"
+                class="flex justify-center items-center"
+            ></div>
+        </div>
     </div>
 {/if}
 {#if state === "not ready"}

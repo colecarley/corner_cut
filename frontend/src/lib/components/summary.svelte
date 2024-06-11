@@ -79,8 +79,9 @@
     function getAverage() {
         return round(
             times
-                .filter((time) => time.isDNF)
-                .reduce((acc, time) => acc + time.time!, 0) / times.length,
+                .filter((time) => !time.isDNF)
+                .reduce((acc, time) => acc + (time.time ?? 0), 0) /
+                times.length,
             2,
         );
     }
