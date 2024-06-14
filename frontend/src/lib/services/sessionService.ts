@@ -31,7 +31,6 @@ export function getSessionIds(): string[] {
 
 export function getSessions(): Session[] {
     const sessionIds = getSessionIds();
-
     const s = [];
     for(const sessionId of sessionIds) {
         const session = getSession(sessionId);
@@ -49,7 +48,7 @@ export function updateSessionIds(newSessionId: string) {
 
 export function getSession(sessionId: string) {
     if (!getSessionIds().includes(sessionId)) {
-        throw new Error("Not a valid session");
+        throw new Error(`${sessionId} not a valid session`);
     }
 
     const session: Session = getItem(sessionId, null)

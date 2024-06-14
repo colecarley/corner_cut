@@ -2,9 +2,11 @@ import { v4 as uuidv4 } from "uuid";
 import { getSession } from "./sessionService";
 import { times$ } from "$lib/store/times";
 import { setItem } from "$lib/utils/setItem";
+import type { cubeTypeId } from "$lib/lookups/cubeTypes";
 
 export type Time = {
     id: string,
+    scrambleType: cubeTypeId, 
     scramble: string,
     createdAt: Date,
     time?: number, // milliseconds
@@ -25,10 +27,11 @@ export function saveTime(sessionId: string, time: Time) {
     setItem(sessionId, session);
 }
 
-export function createTime(time: number, scramble: string, isDNF = false) {
+export function createTime(time: number, scrambleType: cubeTypeId,scramble: string, isDNF = false) {
     return {
         id: uuidv4(),
         time, 
+        scrambleType,
         scramble,
         isDNF,
         createdAt: new Date()

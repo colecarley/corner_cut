@@ -1,8 +1,16 @@
 <script lang="ts">
     import Center from "$lib/components/center.svelte";
+    import Summary from "$lib/components/summary.svelte";
     import { cubeTypes, type cubeTypeId } from "$lib/lookups/cubeTypes";
     import { twistyPlayerCubeTypesById } from "$lib/lookups/twistyPlayerCubeTypes";
+    import { getConfig, updateConfig } from "$lib/services/configService";
     import { getScramble } from "$lib/services/scrambleService";
+    import {
+        createSession,
+        getSessions,
+        saveSession,
+        type Session,
+    } from "$lib/services/sessionService";
     import {
         createTime,
         getTimes,
@@ -11,22 +19,19 @@
         updateTime,
         type Time,
     } from "$lib/services/timeService";
-    import { TwistyPlayer, type PuzzleID } from "cubing/twisty";
-    import { Button, Label, Modal, Select } from "flowbite-svelte";
-    import { onMount } from "svelte";
-    import { themes, type Theme, type ThemeId } from "../../themes/_list";
-    import Summary from "$lib/components/summary.svelte";
-    import {
-        createSession,
-        getSessions,
-        saveSession,
-        type Session,
-    } from "$lib/services/sessionService";
-    import { times$ } from "$lib/store/times";
-    import { sessions$ } from "$lib/store/sessions";
-    import { getConfig, updateConfig } from "$lib/services/configService";
     import { config$ } from "$lib/store/config";
-    import { RefreshOutline } from "flowbite-svelte-icons";
+    import { currentSession$ } from "$lib/store/currentSession";
+    import { sessions$ } from "$lib/store/sessions";
+    import { times$ } from "$lib/store/times";
+    import { TwistyPlayer, type PuzzleID } from "cubing/twisty";
+    import { Button, Modal, Select } from "flowbite-svelte";
+    import {
+        BanOutline,
+        RefreshOutline,
+        TrashBinSolid,
+    } from "flowbite-svelte-icons";
+    import { onMount } from "svelte";
+    import { themes, type ThemeId } from "../../themes/_list";
 
     let selectedColor: ThemeId = "material";
     function updateColors() {
@@ -34,16 +39,22 @@
     }
 
     let showTimeModal = false;
-    let selectedTime: Time;
 
     let scramble: string = "";
     let scrambleType: cubeTypeId = "333";
     let sessions: Session[] = [];
+    let times: Time[] = [];
     sessions$.subscribe((value) => {
         sessions = value;
     });
     let currentSession: string;
-    let times: Time[] = [];
+    currentSession$.subscribe((value) => {
+        if (value) {
+            currentSession = value.id;
+            getTimes(currentSession);
+            updateTwistyPlayer();
+        }
+    });
     times$.subscribe((value) => {
         times = value.sort(
             (a, b) =>
@@ -53,6 +64,11 @@
     });
 
     onMount(() => {
+        getSessions();
+        if (!sessions.length) {
+            saveSession(createSession("Playground", "333"));
+        }
+        scramble = getScramble(scrambleType);
         config$.subscribe((value) => {
             if (!value.color) return;
 
@@ -75,14 +91,7 @@
             updateTwistyPlayer();
         });
 
-        scramble = getScramble(scrambleType);
-        getSessions();
-        if (!sessions.length) {
-            saveSession(createSession("Playground", "333"));
-        }
-        currentSession = sessions[0]?.id;
         getConfig();
-        getTimes(currentSession);
     });
 
     function updateTwistyPlayer() {
@@ -103,21 +112,25 @@
         }
     }
 
-    function changeSession() {
-        times = getTimes(currentSession);
-        updateTwistyPlayer();
-    }
-
     function updateScramble() {
         scramble = getScramble(scrambleType);
         updateTwistyPlayer();
     }
 
+    function getLastTime() {
+        if (!times.length) return;
+        return times[0];
+    }
+
     function handleDeleteTime() {
+        const selectedTime = getLastTime();
+        if (!selectedTime) return;
         removeTime(currentSession, selectedTime.id);
     }
 
     function handleDNF() {
+        const selectedTime = getLastTime();
+        if (!selectedTime) return;
         updateTime(currentSession, selectedTime.id, { isDNF: true });
     }
 
@@ -141,7 +154,10 @@
             `${datetime.getSeconds()}.${datetime.getMilliseconds()}`,
         );
 
-        saveTime(currentSession, createTime(time, scramble, false));
+        saveTime(
+            currentSession,
+            createTime(time, scrambleType, scramble, false),
+        );
         scramble = getScramble(scrambleType);
     }
 
@@ -189,19 +205,18 @@
 />
 
 {#if state === "idle"}
-    <div class="p-8 flex gap-6">
-        <Label>
-            <p class="text-text">Scramble Type</p>
+    <div class="bg-bg">
+        <div class="p-6 flex gap-6">
             <Select
+                placeholder="Select Scramble Type"
+                underline={true}
                 bind:value={scrambleType}
                 items={cubeTypes.map((c) => ({ ...c, value: c.id }))}
                 on:change={() => updateScramble()}
             />
-        </Label>
-        <Label>
-            <p class="text-text">Theme</p>
-
             <Select
+                placeholder="Select Theme"
+                underline={true}
                 bind:value={selectedColor}
                 items={themes
                     .slice()
@@ -214,45 +229,49 @@
                     }))}
                 on:change={() => updateColors()}
             ></Select>
-        </Label>
-        <Label>
-            <p class="text-text">Session</p>
-
-            <Select
-                bind:value={currentSession}
-                items={sessions.map((session) => ({
-                    value: session.id,
-                    name: session.name,
-                }))}
-                on:change={() => changeSession()}
-            ></Select>
-        </Label>
-    </div>
-    <div class="grid grid-cols-3">
-        <div class="grid grid-cols-2 gap-6 p-6">
-            {#if times.length}
-                <Summary bind:times></Summary>
-            {/if}
         </div>
-        <div class="col-span-2">
-            <div class="flex flex-col items-center text-text">
-                <h1 class="text-[50px] p-4 rounded-2xl bg-sub-alt text-main">
-                    <span class="hover:text-text">
-                        {scramble}
-                    </span>
-                </h1>
-                <Button
-                    class="text-sub focus:ring-0"
-                    on:click={() => updateScramble()}
-                >
-                    <RefreshOutline></RefreshOutline>
-                </Button>
+        <div class="grid grid-cols-3">
+            <div class="grid grid-cols-2 gap-6 p-6">
+                {#if times.length}
+                    <Summary bind:times></Summary>
+                {/if}
             </div>
-            <div
-                use:foo
-                id="twisty-player"
-                class="flex justify-center items-center"
-            ></div>
+            <div class="col-span-2">
+                <div class="flex flex-col items-center text-text">
+                    <div class="rounded-2xl bg-sub-alt">
+                        <Button
+                            class="text-sub focus:ring-0"
+                            on:click={() => handleDeleteTime()}
+                        >
+                            <TrashBinSolid class="hover:text-text"
+                            ></TrashBinSolid>
+                        </Button>
+                        <Button
+                            class="text-sub focus:ring-0"
+                            on:click={() => handleDNF()}
+                        >
+                            <BanOutline class="hover:text-text"></BanOutline>
+                        </Button>
+                        <Button
+                            class="text-sub focus:ring-0"
+                            on:click={() => updateScramble()}
+                        >
+                            <RefreshOutline class="hover:text-text"
+                            ></RefreshOutline>
+                        </Button>
+                    </div>
+                    <h1 class="text-[50px] p-4 text-main">
+                        <span class="hover:text-text">
+                            {scramble}
+                        </span>
+                    </h1>
+                </div>
+                <div
+                    use:foo
+                    id="twisty-player"
+                    class="flex justify-center items-center"
+                ></div>
+            </div>
         </div>
     </div>
 {/if}
