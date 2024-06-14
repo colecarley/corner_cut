@@ -24,7 +24,7 @@
     import { sessions$ } from "$lib/store/sessions";
     import { times$ } from "$lib/store/times";
     import { TwistyPlayer, type PuzzleID } from "cubing/twisty";
-    import { Button, Modal, Select } from "flowbite-svelte";
+    import { Button, Modal, Select, Tooltip } from "flowbite-svelte";
     import {
         BanOutline,
         RefreshOutline,
@@ -206,7 +206,7 @@
 
 {#if state === "idle"}
     <div class="bg-bg">
-        <div class="p-6 flex gap-6">
+        <div class="flex gap-6">
             <Select
                 placeholder="Select Scramble Type"
                 underline={true}
@@ -230,12 +230,10 @@
                 on:change={() => updateColors()}
             ></Select>
         </div>
-        <div class="grid grid-cols-3">
-            <div class="grid grid-cols-2 gap-6 p-6">
-                {#if times.length}
-                    <Summary bind:times></Summary>
-                {/if}
-            </div>
+        <div class="grid grid-cols-3 p-12">
+            {#if times.length}
+                <Summary bind:times></Summary>
+            {/if}
             <div class="col-span-2">
                 <div class="flex flex-col items-center text-text">
                     <div class="rounded-2xl bg-sub-alt">
@@ -246,12 +244,14 @@
                             <TrashBinSolid class="hover:text-text"
                             ></TrashBinSolid>
                         </Button>
+                        <Tooltip>delete last solve</Tooltip>
                         <Button
                             class="text-sub focus:ring-0"
                             on:click={() => handleDNF()}
                         >
                             <BanOutline class="hover:text-text"></BanOutline>
                         </Button>
+                        <Tooltip>DNF last solve</Tooltip>
                         <Button
                             class="text-sub focus:ring-0"
                             on:click={() => updateScramble()}
@@ -259,17 +259,22 @@
                             <RefreshOutline class="hover:text-text"
                             ></RefreshOutline>
                         </Button>
+                        <Tooltip>refresh scramble</Tooltip>
                     </div>
-                    <h1 class="text-[50px] p-4 text-main">
-                        <span class="hover:text-text">
-                            {scramble}
-                        </span>
-                    </h1>
+                    <Button
+                        class="hover:text-text text-[50px] p-8 text-main focus:ring-0 font"
+                        on:click={() => {
+                            navigator.clipboard.writeText(scramble);
+                        }}
+                    >
+                        {scramble}
+                    </Button>
+                    <Tooltip>click to copy</Tooltip>
                 </div>
                 <div
                     use:foo
                     id="twisty-player"
-                    class="flex justify-center items-center"
+                    class="flex justify-center items-center h-full"
                 ></div>
             </div>
         </div>

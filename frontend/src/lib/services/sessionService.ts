@@ -11,17 +11,19 @@ export type Session = {
     createdAt: Date,
     scrambleType?: cubeTypeId | 'none',
     times: Record<string, Time>
+    description?: string
 }
 
 const SESSIONS_KEY = "cornercut_sessionIds";
 
-export function createSession(name: string, scrambleType: cubeTypeId | 'none' = 'none'): Session {
+export function createSession(name: string, scrambleType: cubeTypeId | 'none' = 'none', description?: string): Session {
     return {
         id: uuidv4(),
         name,
         scrambleType,
         createdAt: new Date(),
-        times: {}
+        times: {},
+        description
     }
 }
 

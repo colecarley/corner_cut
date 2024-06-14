@@ -1,6 +1,7 @@
 <script lang="ts">
     import { type Time } from "$lib/services/timeService";
     import { round } from "$lib/utils/round";
+    import { Tooltip } from "flowbite-svelte";
 
     export let times: Time[];
 
@@ -87,39 +88,49 @@
     }
 </script>
 
-<div>
-    <div>
+<div class="w-full">
+    <div class="w-full">
         <p class="font-bold text-sub">last</p>
-        <h3 class="font-bold text-main text-[96px]">{times[0].time}</h3>
+        <h1 class="font-bold text-main text-[96px] w-fit pr-2">
+            {times[0]?.time}
+        </h1>
+        <Tooltip placement="right">last solve</Tooltip>
     </div>
-    <div class="grid grid-cols-2 gap-6">
-        <div>
+    <div class="grid grid-cols-2 gap-6 w-full">
+        <div class="w-fit">
             <p class="font-bold text-sub">total</p>
             <h3 class="font-bold text-main text-3xl">{times.length}</h3>
         </div>
-        <div>
+        <Tooltip>total number of solves</Tooltip>
+
+        <div class="w-fit">
             <p class="font-bold text-sub">best</p>
             <h3 class="font-bold text-main text-3xl">{best}</h3>
         </div>
+        <Tooltip>best time</Tooltip>
 
-        <div>
+        <div class="w-fit">
             <p class="font-bold text-sub">average</p>
             <h3 class="font-bold text-main text-3xl">{average}</h3>
         </div>
+        <Tooltip>average of all times</Tooltip>
 
-        <div>
-            <p class="font-bold text-sub">ao3</p>
+        <div class="w-fit">
+            <p class="font-bold text-sub w-fit">ao3</p>
             <h3 class="font-bold text-main text-3xl">{ao3}</h3>
         </div>
+        <Tooltip>average of three</Tooltip>
 
-        <div>
+        <div class="w-fit">
             <p class="font-bold text-sub">ao5</p>
             <h3 class="font-bold text-main text-3xl">{ao5}</h3>
         </div>
+        <Tooltip>average of five</Tooltip>
 
-        <div>
+        <div class="w-fit">
             <p class="font-bold text-sub">ao12</p>
             <h3 class="font-bold text-main text-3xl">{ao12}</h3>
         </div>
+        <Tooltip>average of twelve</Tooltip>
     </div>
 </div>

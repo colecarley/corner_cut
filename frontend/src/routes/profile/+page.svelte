@@ -1,25 +1,40 @@
 <script lang="ts">
-    import { goto } from "$app/navigation";
     import {
         cubeTypeById,
         cubeTypes,
         type cubeTypeId,
     } from "$lib/lookups/cubeTypes";
     import {
-        type Session,
         createSession,
         getSessions,
         removeSession,
         saveSession,
+        type Session,
     } from "$lib/services/sessionService";
+    import { currentSession$ } from "$lib/store/currentSession";
     import { sessions$ } from "$lib/store/sessions";
-    import { Button, Card, Input, Label, Modal, Select } from "flowbite-svelte";
+    import {
+        Button,
+        Card,
+        Input,
+        Label,
+        Modal,
+        Select,
+        Textarea,
+    } from "flowbite-svelte";
+    import { PlusOutline, TrashBinSolid } from "flowbite-svelte-icons";
     import { onMount } from "svelte";
-    import { CloseOutline } from "flowbite-svelte-icons";
 
     let sessions: Session[] = [];
     sessions$.subscribe((value) => {
         sessions = value;
+    });
+
+    let currentSession: string;
+    currentSession$.subscribe((value) => {
+        if (value) {
+            currentSession = value?.id;
+        }
     });
 
     onMount(() => {
@@ -29,10 +44,17 @@
     let showModal = false;
     function createNewSession() {
         showModal = false;
+        if (!form.sessionName) {
+            return;
+        }
+        if (!form.scrambleType) {
+            form.scrambleType = "none";
+        }
 
         const session = createSession(
             form.sessionName,
             form.scrambleType as cubeTypeId,
+            form.description,
         );
         saveSession(session);
     }
@@ -41,16 +63,15 @@
         removeSession(sessionId);
     }
 
-    let form = { sessionName: "Playground", scrambleType: "333" };
+    let form = { sessionName: "", scrambleType: "", description: "" };
 </script>
 
-<div class="grid grid-cols-2 gap-4">
+<div class="flex gap-4">
     {#each sessions as session}
         <Card
-            class="bg-sub-alt border-sub-alt"
-            on:click={() => {
-                goto(`/session/${session.id}`);
-            }}
+            class="{currentSession === session.id
+                ? 'border-main border-4'
+                : 'border-sub-alt border-4'} bg-sub-alt"
         >
             <div class="flex justify-between items-start">
                 <div>
@@ -69,34 +90,61 @@
                         deleteSession(session.id);
                     }}
                 >
-                    <CloseOutline color="var(--sub-color)" />
+                    <TrashBinSolid color="var(--sub-color)" />
                 </Button>
             </div>
+            {#if session.description}
+                <div>
+                    <p class="text-text">{session.description}</p>
+                </div>
+            {/if}
         </Card>
     {/each}
 </div>
 
-<Button on:click={() => (showModal = true)}>New Session</Button>
 <Modal title="Create Session" bind:open={showModal} autoclose>
-    <Label for="session_name" class="mb-2">Session Name</Label>
-    <Input
-        type="text"
-        id="session_name"
-        placeholder="Playground"
-        required
-        bind:value={form.sessionName}
-    />
+    <Label for="session_name" class="mb-2">
+        Session Name
+        <Input
+            type="text"
+            id="session_name"
+            placeholder="Playground"
+            required
+            bind:value={form.sessionName}
+        />
+    </Label>
     <Label>
-        <p class="text-text">Scramble Type</p>
+        Scramble Type
         <Select
+            placeholder="3x3x3"
             bind:value={form.scrambleType}
             items={cubeTypes.map((c) => ({ ...c, value: c.id }))}
             required
         />
     </Label>
+    <Label for="description" class="mb-2">
+        Description
+        <Textarea
+            type="text"
+            id="description"
+            placeholder="This is a description"
+            bind:value={form.description}
+        />
+    </Label>
     <svelte:fragment slot="footer">
-        <Button color="alternative" on:click={() => createNewSession()}
-            >Create</Button
+        <Button
+            color="alternative"
+            on:click={() => createNewSession()}
+            disabled={!form.sessionName}>Create</Button
         >
     </svelte:fragment>
 </Modal>
+<Button
+    class="absolute end-6 bottom-16 rounded-full bg-main aspect-square"
+    on:click={() => {
+        console.log("clicked");
+        showModal = true;
+    }}
+>
+    <PlusOutline size="lg" />
+</Button>
