@@ -3,7 +3,6 @@
     import Summary from "$lib/components/summary.svelte";
     import { cubeTypes, type cubeTypeId } from "$lib/lookups/cubeTypes";
     import { twistyPlayerCubeTypesById } from "$lib/lookups/twistyPlayerCubeTypes";
-    import { getConfig, updateConfig } from "$lib/services/configService";
     import { getScramble } from "$lib/services/scrambleService";
     import {
         createSession,
@@ -19,7 +18,8 @@
         updateTime,
         type Time,
     } from "$lib/services/timeService";
-    import { config$ } from "$lib/store/config";
+    import { currentScramble$ } from "$lib/store/currentScramble";
+    import { currentScrambleType$ } from "$lib/store/currentScrambleType";
     import { currentSession$ } from "$lib/store/currentSession";
     import { sessions$ } from "$lib/store/sessions";
     import { times$ } from "$lib/store/times";
@@ -31,18 +31,23 @@
         TrashBinSolid,
     } from "flowbite-svelte-icons";
     import { onMount } from "svelte";
-    import { themes, type ThemeId } from "../../themes/_list";
-
-    let selectedColor: ThemeId = "material";
-    function updateColors() {
-        updateConfig({ color: selectedColor });
-    }
 
     let showTimeModal = false;
 
     let scramble: string = "";
-    let scrambleType: cubeTypeId = "333";
+    currentScramble$.subscribe((value) => {
+        if (!value) return;
+        scramble = value;
+    });
+
     let sessions: Session[] = [];
+    let scrambleType: cubeTypeId = "333";
+    currentScrambleType$.subscribe((value) => {
+        if (!value) return;
+        scrambleType = value;
+        updateScramble();
+    });
+
     let times: Time[] = [];
     sessions$.subscribe((value) => {
         sessions = value;
@@ -68,33 +73,13 @@
         if (!sessions.length) {
             saveSession(createSession("Playground", "333"));
         }
-        scramble = getScramble(scrambleType);
-        config$.subscribe((value) => {
-            if (!value.color) return;
-
-            const stylesheets = document.querySelectorAll(
-                "link[rel=stylesheet]",
-            );
-
-            for (const sheet of stylesheets) {
-                sheet.parentElement?.removeChild(sheet);
-            }
-
-            const link = document.createElement("link");
-            link.setAttribute("rel", "stylesheet");
-            link.setAttribute(
-                "href",
-                `/Users/colecarley/src/corner_cut/frontend/src/themes/${value.color}.css`,
-            );
-
-            document.head.appendChild(link);
-            updateTwistyPlayer();
-        });
-
-        getConfig();
+        currentScramble$.set(getScramble(scrambleType));
     });
 
     function updateTwistyPlayer() {
+        if (!scramble) return;
+        if (!scrambleType) return;
+
         const player = new TwistyPlayer({
             alg: scramble,
             visualization: "2D",
@@ -113,7 +98,7 @@
     }
 
     function updateScramble() {
-        scramble = getScramble(scrambleType);
+        currentScramble$.set(getScramble(scrambleType));
         updateTwistyPlayer();
     }
 
@@ -158,7 +143,7 @@
             currentSession,
             createTime(time, scrambleType, scramble, false),
         );
-        scramble = getScramble(scrambleType);
+        currentScramble$.set(getScramble(scrambleType));
     }
 
     let timeStamp = 0;
@@ -206,31 +191,8 @@
 
 {#if state === "idle"}
     <div class="bg-bg">
-        <div class="flex gap-6">
-            <Select
-                placeholder="Select Scramble Type"
-                underline={true}
-                bind:value={scrambleType}
-                items={cubeTypes.map((c) => ({ ...c, value: c.id }))}
-                on:change={() => updateScramble()}
-            />
-            <Select
-                placeholder="Select Theme"
-                underline={true}
-                bind:value={selectedColor}
-                items={themes
-                    .slice()
-                    .sort((a, b) =>
-                        a.name > b.name ? 1 : a.name < b.name ? -1 : 0,
-                    )
-                    .map((color) => ({
-                        name: color.name.split("_").join(" "),
-                        value: color.name,
-                    }))}
-                on:change={() => updateColors()}
-            ></Select>
-        </div>
-        <div class="grid grid-cols-3 p-12">
+        <!-- <div class="flex gap-6"></div> -->
+        <div class="grid grid-cols-3">
             {#if times.length}
                 <Summary bind:times></Summary>
             {/if}
@@ -262,7 +224,7 @@
                         <Tooltip>refresh scramble</Tooltip>
                     </div>
                     <Button
-                        class="hover:text-text text-[50px] p-8 text-main focus:ring-0 font"
+                        class="hover:text-text text-[36px] p-8 text-main focus:ring-0 font"
                         on:click={() => {
                             navigator.clipboard.writeText(scramble);
                         }}
@@ -274,7 +236,7 @@
                 <div
                     use:foo
                     id="twisty-player"
-                    class="flex justify-center items-center h-full"
+                    class="flex justify-center items-center"
                 ></div>
             </div>
         </div>

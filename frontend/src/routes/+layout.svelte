@@ -18,12 +18,34 @@
     } from "flowbite-svelte-icons";
     import { onMount } from "svelte";
     import "../app.css";
+    import { themes, type ThemeId } from "../themes/_list";
+    import { updateConfig } from "$lib/services/configService";
+    import { config$ } from "$lib/store/config";
+    import { cubeTypes, type cubeTypeId } from "$lib/lookups/cubeTypes";
+    import { getScramble } from "$lib/services/scrambleService";
+    import { currentScramble$ } from "$lib/store/currentScramble";
+    import { currentScrambleType$ } from "$lib/store/currentScrambleType";
+
+    let selectedColor: ThemeId = "material";
+    function updateColors() {
+        updateConfig({ color: selectedColor });
+    }
+
+    function updateScramble() {
+        currentScramble$.set(getScramble(scrambleType));
+        currentScrambleType$.set(scrambleType);
+    }
+
+    let scrambleType: cubeTypeId = "333";
+    currentScrambleType$.subscribe((value) => {
+        if (!value) return;
+        scrambleType = value;
+    });
 
     let currentSession: string;
     currentSession$.subscribe((value) => {
-        if (value) {
-            currentSession = value?.id;
-        }
+        if (!value) return;
+        currentSession = value?.id;
     });
 
     let sessions: Session[] = [];
@@ -40,11 +62,35 @@
 
     onMount(() => {
         getSessions();
+        let scramble = getScramble(scrambleType);
+        currentScramble$.set(scramble);
+        currentScrambleType$.set(scrambleType);
 
         if (!sessions.length) {
             saveSession(createSession("playground", "333", "first session!"));
         }
         currentSession$.set(sessions[0]);
+
+        config$.subscribe((value) => {
+            if (!value.color) return;
+
+            const stylesheets = document.querySelectorAll(
+                "link[rel=stylesheet]",
+            );
+
+            for (const sheet of stylesheets) {
+                sheet.parentElement?.removeChild(sheet);
+            }
+
+            const link = document.createElement("link");
+            link.setAttribute("rel", "stylesheet");
+            link.setAttribute(
+                "href",
+                `/Users/colecarley/src/corner_cut/frontend/src/themes/${value.color}.css`,
+            );
+
+            document.head.appendChild(link);
+        });
     });
 
     function changeSession() {
@@ -87,6 +133,13 @@
         <div class="flex items-center gap-8">
             {#if activePage !== "/"}
                 <Select
+                    placeholder="Select Scramble Type"
+                    underline={true}
+                    bind:value={scrambleType}
+                    items={cubeTypes.map((c) => ({ ...c, value: c.id }))}
+                    on:change={() => updateScramble()}
+                />
+                <Select
                     placeholder="Select Session"
                     underline={true}
                     bind:value={currentSession}
@@ -112,6 +165,24 @@
         <slot></slot>
     </div>
     <footer class="fixed left-0 bottom-0 w-full bg-main p-2 px-6">
-        <p>made with &lt3 - cole</p>
+        <div class="flex justify-between">
+            <p>made with &lt3 - cole</p>
+            <Select
+                class="w-fit"
+                placeholder="Select Theme"
+                underline={true}
+                bind:value={selectedColor}
+                items={themes
+                    .slice()
+                    .sort((a, b) =>
+                        a.name > b.name ? 1 : a.name < b.name ? -1 : 0,
+                    )
+                    .map((color) => ({
+                        name: color.name.split("_").join(" "),
+                        value: color.name,
+                    }))}
+                on:change={() => updateColors()}
+            ></Select>
+        </div>
     </footer>
 </div>
